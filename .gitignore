@@ -1,0 +1,34 @@
+# Compiled output
+/target/
+
+# Rust/Cargo
+**/*.rs.bk
+Cargo.lock
+
+# Visual Studio Code
+.vscode/
+
+# IDEA
+.idea/
+
+# Logs
+*.log
+
+# Executables
+*.exe
+*.dll
+*.so
+*.dylib
+
+# MacOS
+.DS_Store
+
+# Node.js (if you have a frontend)
+node_modules/
+
+# Docker
+docker-compose.override.yml
+.env
+
+# Custom
+/tmp/

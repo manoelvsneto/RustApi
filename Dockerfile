@@ -10,4 +10,4 @@ FROM debian:buster-slim
 
 COPY --from=builder /app/target/release/rust_sqlx_swagger /usr/local/bin
 
-CMD ["rust_api"]
+CMD ["rust_sqlx_swagger"]

@@ -1,9 +1,16 @@
 use actix_web::{web, HttpResponse};
+use paperclip::actix::web::{self, Json};
 use sqlx::Pool;
 use sqlx::Mssql;
 use uuid::Uuid;
 
 use crate::models::Pessoa;
+
+#[derive(Deserialize, Apiv2Schema)]
+pub struct CreatePessoaBody {
+    pub nome: String,
+    pub email: String,
+}
 
 pub async fn get_pessoas(pool: web::Data<Pool<Mssql>>) -> HttpResponse {
     let pessoas = sqlx::query_as!(Pessoa, "SELECT id, nome, email FROM pessoas")
@@ -26,11 +33,14 @@ pub async fn get_pessoa(pool: web::Data<Pool<Mssql>>, pessoa_id: web::Path<Uuid>
     }
 }
 
-pub async fn create_pessoa(pool: web::Data<Pool<Mssql>>, pessoa: web::Json<Pessoa>) -> HttpResponse {
+pub async fn create_pessoa(
+    pool: web::Data<Pool<Mssql>>,
+    body: Json<CreatePessoaBody>,
+) -> HttpResponse {
     let new_pessoa = Pessoa {
         id: Uuid::new_v4(),
-        nome: pessoa.nome.clone(),
-        email: pessoa.email.clone(),
+        nome: body.nome.clone(),
+        email: body.email.clone(),
     };
 
     let result = sqlx::query!(
@@ -51,20 +61,20 @@ pub async fn create_pessoa(pool: web::Data<Pool<Mssql>>, pessoa: web::Json<Pesso
 pub async fn update_pessoa(
     pool: web::Data<Pool<Mssql>>,
     pessoa_id: web::Path<Uuid>,
-    pessoa: web::Json<Pessoa>,
+    body: Json<CreatePessoaBody>,
 ) -> HttpResponse {
     let id = pessoa_id.into_inner();
     let result = sqlx::query!(
         "UPDATE pessoas SET nome = ?, email = ? WHERE id = ?",
-        pessoa.nome,
-        pessoa.email,
+        body.nome,
+        body.email,
         id
     )
     .execute(pool.get_ref())
     .await;
 
     match result {
-        Ok(_) => HttpResponse::Ok().json(pessoa.into_inner()),
+        Ok(_) => HttpResponse::Ok().json(body.into_inner()),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }

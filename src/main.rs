@@ -1,6 +1,7 @@
 use actix_web::{web, App, HttpServer};
 use dotenv::dotenv;
 use std::env;
+use paperclip::actix::{OpenApiExt, web::Data};
 
 mod config;
 mod db;
@@ -17,8 +18,11 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(pool.clone()))
+            .app_data(Data::new(pool.clone()))
+            .wrap_api()
             .configure(routes::init)
+            .with_json_spec_at("/api/spec/v2")
+            .build()
     })
     .bind((config.server.host, config.server.port))?
     .run()

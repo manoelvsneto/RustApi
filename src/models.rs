@@ -1,9 +1,9 @@
-use serde::{Serialize, Deserialize};
-use utoipa::ToSchema;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(Serialize, Deserialize, sqlx::FromRow)]
 pub struct Pessoa {
-    pub id: Option<i32>,
+    pub id: Uuid,
     pub nome: String,
     pub email: String,
 }

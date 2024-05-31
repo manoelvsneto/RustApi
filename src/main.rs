@@ -1,30 +1,26 @@
 use actix_web::{web, App, HttpServer};
-use sqlx::MssqlPool;
 use dotenv::dotenv;
+use std::env;
 
+mod config;
 mod db;
 mod handlers;
 mod models;
-mod swagger;
+mod routes;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    let pool = db::establish_connection().await;
+    env_logger::init();
+    let config = config::Config::from_env().unwrap();
+    let pool = db::create_pool(&config.database_url).await.unwrap();
 
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
-            .service(web::resource("/pessoas")
-                .route(web::get().to(handlers::get_pessoas))
-                .route(web::post().to(handlers::create_pessoa)))
-            .service(web::resource("/pessoas/{id}")
-                .route(web::get().to(handlers::get_pessoa_by_id))
-                .route(web::put().to(handlers::update_pessoa))
-                .route(web::delete().to(handlers::delete_pessoa)))
-            .service(swagger::swagger())
+            .configure(routes::init)
     })
-    .bind("127.0.0.1:8080")?
+    .bind((config.server.host, config.server.port))?
     .run()
     .await
 }
